@@ -11,6 +11,8 @@ def get_args_parser():
                         help='Show generating matrix of the RM(r, m)')
     parser.add_argument('--encode', '-e', type=str, help='Vector for encoding')
     parser.add_argument('--decode', '-d', type=str, help='Vector for encoding')
+    parser.add_argument('--show_num_errors', '-t', action='store_true',
+                        help='Show number of possible errors for RM(r,m)')
     return parser
 
 def get_generating_matrix(r, m):
@@ -56,12 +58,13 @@ def transform_decode(vect, m):
     
     return np.array([int(x) - int('0') for x in vect], dtype=np.uint8)
 
-def encode(G, vect):
-    return np.dot(vect, G) % 2
+def encode(G, vencode):
+    return np.dot(vencode, G) % 2
 
-def decode(r, m, G, vect):
+def decode(r, m, G, vdecode):
     size = sum([math.comb(m, i) for i in range(r + 1)])
     u = np.zeros(size, dtype = np.uint8)
+    vect = vdecode.copy()
 
     for i in range(r, -1, -1):
         cmbs = it.combinations(range(1, m + 1), i)
@@ -83,7 +86,7 @@ def decode(r, m, G, vect):
             u[cur] = 1 if N_ones > N_zeros else 0
             #print(f"u={u} cur={cur} mask={mask} N_ones={N_ones} N_zeros={N_zeros}")
             cur += 1
-        vect = (vect + np.dot(u, G)) % 2
+        vect = (vdecode + np.dot(u, G)) % 2
     return u
 
 def main():
@@ -96,8 +99,9 @@ def main():
     if args.decode != None:
         vdecode = transform_decode(args.decode, args.m)
     
-    num_err = (2**(args.m - args.r) - 1) // 2
-    print(f"\nCorrect {num_err} errors")
+    if args.show_num_errors:
+        num_err = (2**(args.m - args.r) - 1) // 2
+        print(f"\nCorrect {num_err} errors")
     
     G = get_generating_matrix(args.r, args.m)
     if args.show_gen_matrix:
@@ -105,11 +109,11 @@ def main():
         print(G)
     
     if args.encode != None:
-        print("\nEncoded vector:")
-        print(encode(G, vencode))
+        print(f"\nEncoding vector:")
+        print(''.join([chr(x+ord('0')) for x in encode(G, vencode)]))
 
     if args.decode != None:
-        print("\nDecoded vector:")
-        print(decode(args.r, args.m, G, vdecode))
-
+        print(f"\nDecoding vector:") 
+        print(''.join([chr(x+ord('0')) for x in decode(args.r, args.m, G, vdecode)]))
+        
 main()

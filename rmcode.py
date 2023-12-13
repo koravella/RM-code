@@ -95,7 +95,10 @@ def main():
         vencode = transform_encode(args.encode, args.r, args.m)
     if args.decode != None:
         vdecode = transform_decode(args.decode, args.m)
-
+    
+    num_err = (2**(args.m - args.r) - 1) // 2
+    print(f"\nCorrect {num_err} errors")
+    
     G = get_generating_matrix(args.r, args.m)
     if args.show_gen_matrix:
         print("\nGenerating matrix G:")
